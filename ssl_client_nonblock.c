@@ -77,13 +77,17 @@ int main(int argc, char **argv)
   fdset[0].events = POLLIN;
 
   struct ssl_client *p_client; /* struct per remote client      */
-  p_client=&client;            /* use the single global for now */
+  if ((p_client = malloc(sizeof(*p_client))) == NULL) {
+    die("failed to allocate memory for client state");
+  }
+
+  // p_client=&client;            /* use the single global for now */
 
   ssl_init(0,0);
   ssl_client_init(p_client, sockfd, SSLMODE_CLIENT);
 
   if (host_name)
-    SSL_set_tlsext_host_name(client.ssl, host_name); // TLS SNI
+    SSL_set_tlsext_host_name(p_client->ssl, host_name); // TLS SNI
 
   fdset[1].fd = sockfd;
   fdset[1].events = POLLERR | POLLHUP | POLLNVAL | POLLIN;
@@ -119,7 +123,7 @@ int main(int argc, char **argv)
 #endif
     if (fdset[0].revents & POLLIN)
       do_stdin_read(p_client);
-    if (client.encrypt_len>0)
+    if (p_client->encrypt_len>0)
       if (do_encrypt(p_client) < 0)
         break;
   }
@@ -128,6 +132,10 @@ int main(int argc, char **argv)
   print_ssl_state(p_client);
   print_ssl_error();
   ssl_client_cleanup(p_client);
+
+  if (p_client != NULL ) {
+    free (p_client);
+  }
 
   return 0;
 }

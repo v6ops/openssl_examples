@@ -45,7 +45,12 @@ int main(int argc, char **argv)
   fdset[0].events = POLLIN;
 
   struct ssl_client *p_client; /* struct per remote client      */
-  p_client=&client;            /* use the single global for now */
+
+  if ((p_client = malloc(sizeof(*p_client))) == NULL) {
+        die("failed to allocate memory for client state");
+  }
+
+  //p_client=&client;            /* use the single global for now */
 
   ssl_init("server.crt", "server.key"); // see README to create these files
 
@@ -94,12 +99,16 @@ int main(int argc, char **argv)
 #endif
       if (fdset[0].revents & POLLIN)
         do_stdin_read(p_client);
-      if (client.encrypt_len>0)
+      if (p_client->encrypt_len>0)
         do_encrypt(p_client);
     }
 
     close(fdset[1].fd);
     ssl_client_cleanup(p_client);
+  }
+
+  if (p_client != NULL ) {
+          free (p_client);
   }
 
   return 0;
