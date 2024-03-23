@@ -133,9 +133,7 @@ int main(int argc, char **argv)
   print_ssl_error();
   ssl_client_cleanup(p_client);
 
-  if (p_client != NULL ) {
-    free (p_client);
-  }
+  free (p_client);
 
   return 0;
 }

@@ -107,9 +107,7 @@ int main(int argc, char **argv)
     ssl_client_cleanup(p_client);
   }
 
-  if (p_client != NULL ) {
-          free (p_client);
-  }
+  free (p_client);
 
   return 0;
 }
